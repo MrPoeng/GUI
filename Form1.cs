@@ -1,18 +1,21 @@
 using System;
 using System.Drawing;
+using System.IO;
+using System.Media;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
 namespace GUI
 {
     public partial class Form1 : Form
     {
         // CONTROLS
-        Label lblTitle;
-        RichTextBox rtbChat;
-        TextBox txtName;
-        TextBox txtMessage;
-        Button btnStart;
-        Button btnSend;
+        private Label lblTitle = null!;
+        private RichTextBox rtbChat = null!;
+        private TextBox txtName = null!;
+        private TextBox txtMessage = null!;
+        private Button btnStart = null!;
+        private Button btnSend = null!;
 
         string userName = "";
         bool chatbotStarted = false;
@@ -22,12 +25,44 @@ namespace GUI
         {
             InitializeComponent();
             CreateCustomGUI();
+
+            this.Shown += Form1_Shown;
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void PlayWelcomeAudio()
         {
+            try
+            {
+                string audioPath = Path.Combine(
+                    Application.StartupPath,
+                    "welcome.wav");
+
+                if (File.Exists(audioPath))
+                {
+                    SoundPlayer player = new SoundPlayer(audioPath);
+                    player.Play();
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "welcome.wav not found.\n\nExpected location:\n" +
+                        audioPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Error playing audio:\n" +
+                    ex.Message);
+            }
+        }
+
+        private void Form1_Shown(object? sender, EventArgs e)
+        {
+            PlayWelcomeAudio();
 
         }
+
         private void CreateCustomGUI()
         {
             // FORM 
@@ -69,8 +104,9 @@ namespace GUI
             this.Controls.Add(rtbChat);
 
             // WELCOME MESSAGE
-            DisplayMessage("🤖 Welcome to the CyberSecurity Awareness Chatbot!");
-            DisplayMessage("Please enter your name and click Start.");
+            DisplayMessage("🤖 Hello! My name is Friday.");
+            DisplayMessage("🛡️ I'm here to help you stay safe online.");
+            DisplayMessage("👤 Please enter your name and click Start.");
 
 
             // NAME LABEL
@@ -139,21 +175,33 @@ namespace GUI
             btnSend.Click += BtnSend_Click;
 
             this.Controls.Add(btnSend);
+
+            txtMessage.KeyDown += TxtMessage_KeyDown;
         }
 
 
         // DISPLAY MESSAGE METHOD
 
+        private void TxtMessage_KeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                BtnSend_Click(sender, e);
+                e.SuppressKeyPress = true;
+            }
+        }
+
         private void DisplayMessage(string message)
         {
-            rtbChat.AppendText(message + Environment.NewLine);
+            string time = DateTime.Now.ToString("HH:mm");
+            rtbChat.AppendText($"[{time}] {message}" + Environment.NewLine);
             rtbChat.ScrollToCaret();
         }
 
-       
+
         // START BUTTON EVENT
-        
-        private void BtnStart_Click(object sender, EventArgs e)
+
+        private void BtnStart_Click(object? sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtName.Text))
             {
@@ -170,10 +218,10 @@ namespace GUI
             DisplayMessage($"{userName}, how are you today?");
         }
 
-        
+
         // SEND BUTTON EVENT
-       
-        private void BtnSend_Click(object sender, EventArgs e)
+
+        private void BtnSend_Click(object? sender, EventArgs e)
         {
             if (!chatbotStarted)
             {
@@ -188,18 +236,20 @@ namespace GUI
                 return;
             }
 
-            DisplayMessage("🧑 You: " + input);
+            DisplayMessage($"🧑 {userName}: {input}");
 
-            
+
             // MOOD RESPONSE
-            
+
             if (waitingForMood)
             {
                 if (input.Contains("good") ||
                     input.Contains("fine") ||
                     input.Contains("great"))
                 {
-                    DisplayMessage($"😊 That's great to hear, {userName}! Let's get started.");
+                    string response = $"That's great to hear, {userName}! Let's get started.";
+                    DisplayMessage("😊 " + response);
+
                 }
                 else if (input.Contains("bad") ||
                          input.Contains("sad") ||
@@ -211,6 +261,10 @@ namespace GUI
                 {
                     DisplayMessage($"👍 Thanks for sharing, {userName}! Let's get started.");
                 }
+
+                
+                DisplayMessage("🛡️ CYBERSECURITY AWARENESS ASSISTANT 🛡️");
+                
 
                 DisplayMenu();
 
@@ -289,7 +343,7 @@ namespace GUI
                      input == "what's your name" ||
                      input.Contains("your name"))
             {
-                DisplayMessage("Jarvis, I'm your CyberSecurity Awareness Bot!");
+                DisplayMessage("Friday, I'm your CyberSecurity Awareness Bot!");
             }
 
             
@@ -330,9 +384,8 @@ namespace GUI
             txtMessage.Clear();
         }
 
-        
         // DISPLAY MENU
-        
+
         private void DisplayMenu()
         {
             DisplayMessage("");
@@ -345,9 +398,12 @@ namespace GUI
             DisplayMessage("");
         }
 
-        private void Form1_VisibleChanged(object sender, EventArgs e)
+        private void Form1_VisibleChanged(object? sender, EventArgs e)
         {
 
         }
+
+        
     }
+
 }
