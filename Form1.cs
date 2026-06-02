@@ -31,29 +31,18 @@ namespace GUI
 
         private void PlayWelcomeAudio()
         {
-            try
-            {
-                string audioPath = Path.Combine(
-                    Application.StartupPath,
-                    "welcome.wav");
+            string audioPath = Path.Combine(
+                Application.StartupPath,
+                "welcome.wav");
 
-                if (File.Exists(audioPath))
-                {
-                    SoundPlayer player = new SoundPlayer(audioPath);
-                    player.Play();
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "welcome.wav not found.\n\nExpected location:\n" +
-                        audioPath);
-                }
-            }
-            catch (Exception ex)
+            if (File.Exists(audioPath))
             {
-                MessageBox.Show(
-                    "Error playing audio:\n" +
-                    ex.Message);
+                SoundPlayer player = new SoundPlayer(audioPath);
+                player.Play();
+            }
+            else
+            {
+                MessageBox.Show("File not found:\n" + audioPath);
             }
         }
 
