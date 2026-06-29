@@ -323,7 +323,7 @@ namespace GUI
                 ShowNextTip(currentTopic);
                 return;
             }
-
+            
             // PASSWORDS
             if (input.Contains("1") || input.Contains("password"))
             {
